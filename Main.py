@@ -29,9 +29,9 @@ if "last_sync_time" not in st.session_state:
 if "sync_interval" not in st.session_state:
     st.session_state.sync_interval = 60  # Sync every 60 seconds
 if "oauth_state" not in st.session_state:
-    st.session_state.oauth_state = None  # Initialize oauth_state
+    st.session_state.oauth_state = None
 if "oauth_flow" not in st.session_state:
-    st.session_state.oauth_flow = None  # Initialize oauth_flow
+    st.session_state.oauth_flow = None
 
 # YouTube API setup
 YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"]
@@ -39,7 +39,7 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 # Reddit API setup
-REDDIT_REDIRECT_URI = "https://saved-app.streamlit.app"  # Replace with your deployed URL
+REDDIT_REDIRECT_URI = "https://saved-appstreamlit.app"  # Updated to new deployed URL
 
 # Load secrets
 try:
@@ -123,7 +123,11 @@ def reddit_login():
         redirect_uri=REDDIT_REDIRECT_URI,
         user_agent=REDDIT_USER_AGENT
     )
-    auth_url = reddit.auth.url(["identity", "read", "save"], "uniqueKey", "temporary")
+    auth_url = reddit.auth.url(
+        scopes=["identity", "read", "save"],
+        state="uniqueKey",
+        duration="temporary"
+    )
     st.markdown(f"[Login to Reddit]({auth_url})")
 
 def handle_youtube_callback():
