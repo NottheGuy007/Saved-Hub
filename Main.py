@@ -28,6 +28,10 @@ if "last_sync_time" not in st.session_state:
     st.session_state.last_sync_time = 0
 if "sync_interval" not in st.session_state:
     st.session_state.sync_interval = 60  # Sync every 60 seconds
+if "oauth_state" not in st.session_state:
+    st.session_state.oauth_state = None  # Initialize oauth_state
+if "oauth_flow" not in st.session_state:
+    st.session_state.oauth_flow = None  # Initialize oauth_flow
 
 # YouTube API setup
 YOUTUBE_SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"]
@@ -35,7 +39,7 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 # Reddit API setup
-REDDIT_REDIRECT_URI = "https://saved-app.streamlit.app"  # Replace with your deployed URL
+REDDIT_REDIRECT_URI = "https://nottheguy007-saved-hub.streamlit.app"  # Replace with your deployed URL
 
 # Load secrets
 try:
@@ -101,7 +105,7 @@ def youtube_login():
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
             client_secret_file, YOUTUBE_SCOPES
         )
-        flow.redirect_uri = REDDIT_REDIRECT_URI  # Use the same deployed URL for YouTube
+        flow.redirect_uri = REDDIT_REDIRECT_URI  # Use the deployed URL
         authorization_url, state = flow.authorization_url(
             access_type="offline", include_granted_scopes="true"
         )
@@ -125,14 +129,22 @@ def reddit_login():
 def handle_youtube_callback():
     """Handle YouTube OAuth callback."""
     if "code" in st.query_params and "state" in st.query_params:
+        if st.session_state.oauth_state is None or st.session_state.oauth_flow is None:
+            st.error("OAuth state or flow not initialized. Please try logging in again.")
+            return
         if st.query_params["state"] == st.session_state.oauth_state:
             flow = st.session_state.oauth_flow
-            flow.fetch_token(code=st.query_params["code"])
-            st.session_state.youtube_credentials = flow.credentials
-            st.session_state.youtube_api = get_youtube_api(flow.credentials)
-            st.query_params.clear()
-            sync_content()
-            st.rerun()
+            try:
+                flow.fetch_token(code=st.query_params["code"])
+                st.session_state.youtube_credentials = flow.credentials
+                st.session_state.youtube_api = get_youtube_api(flow.credentials)
+                st.query_params.clear()
+                sync_content()
+                st.rerun()
+            except Exception as e:
+                st.error(f"Error during YouTube authentication: {e}")
+        else:
+            st.error("OAuth state mismatch. Please try logging in again.")
 
 def handle_reddit_callback():
     """Handle Reddit OAuth callback."""
