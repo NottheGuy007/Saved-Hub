@@ -35,7 +35,7 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 # Reddit API setup
-REDDIT_REDIRECT_URI = "http://localhost:8501"  # Streamlit default port
+REDDIT_REDIRECT_URI = "https://saved-app.streamlit.app"  # Replace with your deployed URL
 
 # Load secrets
 try:
@@ -44,7 +44,7 @@ try:
     REDDIT_CLIENT_SECRET = st.secrets["reddit"]["client_secret"]
     REDDIT_USER_AGENT = st.secrets["reddit"]["user_agent"]
 except KeyError as e:
-    st.error(f"Missing secret: {e}. Please configure secrets.toml with YouTube and Reddit credentials.")
+    st.error(f"Missing secret: {e}. Please configure secrets in Streamlit Cloud settings.")
     st.stop()
 
 # Create temporary file for YouTube client secret JSON
@@ -101,7 +101,7 @@ def youtube_login():
         flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
             client_secret_file, YOUTUBE_SCOPES
         )
-        flow.redirect_uri = "http://localhost:8501"
+        flow.redirect_uri = REDDIT_REDIRECT_URI  # Use the same deployed URL for YouTube
         authorization_url, state = flow.authorization_url(
             access_type="offline", include_granted_scopes="true"
         )
@@ -131,7 +131,7 @@ def handle_youtube_callback():
             st.session_state.youtube_credentials = flow.credentials
             st.session_state.youtube_api = get_youtube_api(flow.credentials)
             st.query_params.clear()
-            sync_content()  # Sync content immediately after login
+            sync_content()
             st.rerun()
 
 def handle_reddit_callback():
@@ -147,7 +147,7 @@ def handle_reddit_callback():
             reddit.auth.authorize(st.query_params["code"])
             st.session_state.reddit = reddit
             st.query_params.clear()
-            sync_content()  # Sync content immediately after login
+            sync_content()
             st.rerun()
         except Exception as e:
             st.error(f"Reddit login failed: {e}")
