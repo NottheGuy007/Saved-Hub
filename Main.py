@@ -39,7 +39,7 @@ YOUTUBE_API_SERVICE_NAME = "youtube"
 YOUTUBE_API_VERSION = "v3"
 
 # Reddit API setup
-REDDIT_REDIRECT_URI = "https://nottheguy007-saved-hub.streamlit.app"  # Replace with your deployed URL
+REDDIT_REDIRECT_URI = "https://saved-app.streamlit.app"  # Replace with your deployed URL
 
 # Load secrets
 try:
